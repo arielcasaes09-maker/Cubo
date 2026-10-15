@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>CUBO — Resolvedor de Cubo Mágico</title>
+<style>
+:root{color-scheme:dark;--bg:#0a0b0d;--pn:#14161a;--ln:#262a31;--tx:#e8eaed;--mu:#8b929c;--ac:#22d3ee;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*{box-sizing:border-box}html,body{height:100%;margin:0;background:radial-gradient(circle at 50% 40%,#17191e,#0a0b0d 70%);color:var(--tx);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;overflow:hidden}
+#app{height:100%;display:grid;grid-template-columns:minmax(0,1fr) 380px;grid-template-rows:minmax(0,1fr);grid-template-areas:"s p";gap:16px;padding:16px}
+#app.home{grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr) auto;grid-template-areas:"h" "s" "f";gap:clamp(8px,2vh,20px);padding:clamp(20px,5vh,56px) 20px clamp(20px,5vh,48px)}
+#H1{grid-area:h;text-align:center}#H2{grid-area:f;text-align:center}#stage{grid-area:s;display:flex;flex-direction:column;min-width:0;min-height:0}#cvw{flex:1;position:relative;min-height:0}#bar{display:none;justify-content:flex-start;padding-top:10px}.edit #bar{display:flex}
+.wh{background:#fff;color:#000;border:1px solid #fff;border-radius:8px;min-height:44px;padding:0 24px;font-weight:600;letter-spacing:.06em;text-align:center}.wh:hover{background:#e6e6e6;border-color:#e6e6e6;transform:none}
+.tools{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:12px}.tool{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-height:68px;padding:8px;font-size:11px;letter-spacing:.04em;text-align:center}.tool svg{width:22px;height:22px;flex:none;stroke:var(--ac);fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}@media(max-width:340px){.tools{grid-template-columns:minmax(0,1fr)}}.home #P,.work #H1,.work #H2{display:none}
+canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:grab}
+.lbl{font-size:11px;letter-spacing:.2em;color:var(--mu);margin:16px 0 8px}.cap{font-size:12px;color:var(--mu);text-align:center;margin-top:8px}
+.r2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:8px 0}.r2 .w{grid-column:1/-1}.r2 .on{border-color:var(--ac);color:var(--ac)}
+textarea{width:100%;min-height:72px;resize:vertical;background:#0d0f12;color:var(--tx);border:1px solid var(--ln);border-radius:10px;padding:10px;font:13px/1.4 ui-monospace,Menlo,Consolas,monospace}textarea:focus{outline:none;border-color:var(--ac)}
+
+#H1 h1{margin:0;font-size:clamp(44px,9vw,84px);letter-spacing:.35em;font-weight:200;padding-left:.35em;line-height:1.1}
+#H1 p{color:var(--mu);margin:12px 0 0;letter-spacing:.08em}.tag{font-size:12px;color:var(--mu);letter-spacing:.2em;margin-top:14px}
+button{font:inherit;min-height:44px;line-height:1.2;letter-spacing:.08em;font-size:13px;color:var(--tx);background:transparent;border:1px solid var(--ln);border-radius:10px;padding:11px 16px;cursor:pointer;transition:.2s}
+button:hover{border-color:var(--ac);transform:translateY(-1px)}button.pr{background:var(--ac);color:#021015;border-color:var(--ac);font-weight:600}button:disabled{opacity:.4;cursor:default}
+.lk{border:0;color:var(--mu);text-decoration:underline;padding:6px}
+#P{grid-area:p;min-height:0;background:var(--pn);border:1px solid var(--ln);border-radius:16px;padding:20px;overflow:auto}
+#P h2{font-size:12px;letter-spacing:.25em;color:var(--mu);margin:0 0 12px;font-weight:500}
+.row{display:flex;gap:8px;margin:8px 0;flex-wrap:wrap}.row>*{flex:1;min-width:0}
+.faces,.pal{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px}.faces button,.pal button{aspect-ratio:1;min-height:0;padding:0;display:grid;place-items:center;letter-spacing:0;font-weight:600}.faces button{font-size:16px}.faces .on{border-color:var(--ac);color:var(--ac);background:rgba(34,211,238,.12);box-shadow:0 0 0 1px var(--ac)}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;width:180px;margin:12px auto}.grid b{aspect-ratio:1;border-radius:8px;border:2px solid #000;cursor:pointer;display:grid;place-items:center;background:#2a2a2e;font-size:12px;color:#0008}
+.pal button{font-size:14px;border:2px solid var(--c);background:#101215;position:relative}.pal .on{box-shadow:0 0 0 2px var(--pn),0 0 0 4px var(--c),0 0 14px var(--c)}.pal .on::after{content:'✓';position:absolute;top:1px;right:4px;font-size:10px;color:var(--c)}
+.sm{font-size:12px;color:var(--mu)}.bar{height:4px;background:var(--ln);border-radius:4px;overflow:hidden;margin:6px 0 10px}.bar i{display:block;height:100%;background:var(--ac);transition:width .3s}
+.msg{color:#ff8a80;font-size:13px;margin:8px 0;min-height:1em}.ok{color:#7be0a0}.big{font-size:56px;font-weight:200;text-align:center;color:var(--ac);line-height:1.1;margin:6px 0}
+details{margin:10px 0;color:var(--mu);font-size:13px}summary{cursor:pointer}input[type=range]{width:100%;accent-color:var(--ac)}
+#M{position:fixed;inset:0;background:rgba(0,0,0,.75);display:none;place-items:center;padding:20px;z-index:9}#M div{background:var(--pn);border:1px solid var(--ln);border-radius:16px;padding:22px;max-width:440px;max-height:90vh;overflow:auto}
+#B{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;place-items:center;z-index:8;letter-spacing:.2em;font-size:13px}
+@media(max-width:760px){#app{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(160px,1fr) auto;grid-template-areas:"s" "p";gap:8px;padding:8px}#P{max-height:55vh;padding:14px}.big{font-size:36px}.grid{width:150px;margin:8px auto}}
+</style></head><body>
+<div id="app" class="home">
+<header id="H1"><h1>CUBO</h1><p>Do embaralhado à solução.</p></header>
+<main id="stage"><div id="cvw"><canvas id="c"></canvas></div><div id="bar"><button class="wh" id="bk">VOLTAR</button></div></main>
+<footer id="H2"><div class="row" style="justify-content:center"><button class="pr" id="go" style="flex:0 1 190px">COMEÇAR</button><button id="how" style="flex:0 1 190px">COMO FUNCIONA</button></div><div class="tag">CUBO 3×3×3</div></footer>
+<aside id="P"></aside></div><div id="B">CALCULANDO SOLUÇÃO…</div>
+<div id="M"><div><h2 style="letter-spacing:.2em;font-size:13px;color:var(--mu)">COMO FUNCIONA</h2>
+<p>1. Reproduza as cores do seu cubo físico, face por face (os centros são fixos).<br>2. O app valida se o estado é fisicamente possível.<br>3. O algoritmo de Kociemba (duas fases) calcula a solução.<br>4. Siga cada movimento animado no cubo 3D e repita no seu.</p>
+<p class="sm"><b>R/L/U/D/F/B</b>: direita, esquerda, cima, baixo, frente, trás. <b>'</b>: sentido anti-horário. <b>2</b>: meia-volta. O sentido horário é sempre visto de frente para a face.</p>
+<button class="pr" id="mx" style="width:100%">ENTENDI</button></div></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/cubejs@1.3.2/lib/cube.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/cubejs@1.3.2/lib/solve.js"></script>
+<script>
+const FACES='URFDLB',COL={U:0xf2f2f2,R:0xd62828,F:0x2e9e4f,D:0xf5d02f,L:0xf77f00,B:0x1f5fd1};
+const CN={U:'Branco',R:'Vermelho',F:'Verde',D:'Amarelo',L:'Laranja',B:'Azul'},FN={F:'Frente',B:'Trás',R:'Direita',L:'Esquerda',U:'Cima',D:'Baixo'};
+const FL={F:'frontal',B:'traseira',R:'direita',L:'esquerda',U:'superior',D:'inferior'};
+const TOP={U:'B',D:'F',R:'U',L:'U',F:'U',B:'U'};
+const FA={F:'F',B:'T',R:'D',L:'E',U:'C',D:'B'},CA={U:'B',R:'V',F:'VR',D:'A',L:'L',B:'AZ'};
+const V=THREE.Vector3,Q=THREE.Quaternion,$=s=>document.querySelector(s);
+const NRM={U:new V(0,1,0),R:new V(1,0,0),F:new V(0,0,1),D:new V(0,-1,0),L:new V(-1,0,0),B:new V(0,0,-1)};
+const rnd=v=>new V(Math.round(v.x)+0,Math.round(v.y)+0,Math.round(v.z)+0);
+function fpos(f){const F=FACES[f/9|0],i=f%9,r=i/3|0,c=i%3;return[new V(...{U:[c-1,1,r-1],R:[1,1-r,1-c],F:[c-1,1-r,1],D:[c-1,-1,1-r],L:[-1,1-r,c-1],B:[1-c,1-r,-1]}[F]),NRM[F]]}
+/* ---------- estado lógico + validação ---------- */
+let S=newState();function newState(){const s=Array(54).fill('');FACES.split('').forEach((F,i)=>s[i*9+4]=F);return s}
+const CF=[[8,9,20],[6,18,38],[0,36,47],[2,45,11],[29,26,15],[27,44,24],[33,53,42],[35,17,51]],CC=['URF','UFL','ULB','UBR','DFR','DLF','DBL','DRB'];
+const EF=[[5,10],[7,19],[3,37],[1,46],[32,16],[28,25],[30,43],[34,52],[23,12],[21,41],[50,39],[48,14]],EC=['UR','UF','UL','UB','DR','DF','DL','DB','FR','FL','BL','BR'];
+const inv=p=>{let n=0;for(let i=0;i<p.length;i++)for(let j=i+1;j<p.length;j++)if(p[i]>p[j])n++;return n%2};
+function validate(s){
+ const miss=s.filter(x=>!x).length;if(miss)return`Faltam ${miss} adesivos. Preencha as 6 faces por completo antes de resolver.`;
+ for(const F of FACES){const n=s.filter(x=>x===F).length;if(n!==9)return`A cor ${CN[F]} aparece ${n} vezes; o correto são 9. Confira as faces e corrija.`}
+ const cp=[],ep=[];let tw=0,fl=0;
+ for(let j=0;j<8;j++){const f=CF[j].map(i=>s[i]),o=f.findIndex(x=>x==='U'||x==='D');if(o<0)return`Há um canto sem branco nem amarelo (peça impossível). Revise os cantos das faces.`;
+  const k=CC.indexOf(f[o]+f[(o+1)%3]+f[(o+2)%3]);if(k<0)return`Um canto tem a combinação de cores ${f.map(x=>CN[x]).join('/')}, que não existe num cubo real (ou está na ordem espelhada). Revise as cores desse canto.`;cp[j]=k;tw+=o}
+ for(let j=0;j<12;j++){const a=s[EF[j][0]],b=s[EF[j][1]];let k=EC.indexOf(a+b),o=0;if(k<0){k=EC.indexOf(b+a);o=1}if(k<0)return`Uma aresta tem a combinação ${CN[a]}/${CN[b]}, que não existe num cubo real. Revise as arestas.`;ep[j]=k;fl+=o}
+ if(new Set(cp).size<8)return'Há cantos repetidos (e outros ausentes). Alguma peça foi anotada com a cor errada.';
+ if(new Set(ep).size<12)return'Há arestas repetidas (e outras ausentes). Alguma peça foi anotada com a cor errada.';
+ if(tw%3)return'Estado impossível: há um canto torcido. Num cubo real não é possível girar um único canto; revise as cores dos cantos.';
+ if(fl%2)return'Estado impossível: há uma aresta invertida. Revise as arestas (provável troca de duas cores).';
+ if(inv(cp)!==inv(ep))return'Estado impossível: duas peças parecem trocadas de lugar (paridade). Revise cantos e arestas.';
+ return null}
+/* ---------- cena 3D ---------- */
+const cv=$('#c'),ren=new THREE.WebGLRenderer({canvas:cv,antialias:true,alpha:true}),scene=new THREE.Scene(),cam=new THREE.PerspectiveCamera(36,1,.1,100);
+ren.setPixelRatio(Math.min(devicePixelRatio,2));scene.add(new THREE.HemisphereLight(0xffffff,0x303040,.9));
+const dl=new THREE.DirectionalLight(0xffffff,.8);dl.position.set(4,7,5);scene.add(dl);const dl2=new THREE.DirectionalLight(0x22d3ee,.25);dl2.position.set(-5,-2,-4);scene.add(dl2);
+const cubies=[],box=new THREE.BoxGeometry(.96,.96,.96),pl=new THREE.PlaneGeometry(.82,.82),GRAY=0x2a2a2e;
+for(let x=-1;x<=1;x++)for(let y=-1;y<=1;y++)for(let z=-1;z<=1;z++){
+ const g=new THREE.Group(),bm=new THREE.MeshStandardMaterial({color:0x0b0b0d,roughness:.6});g.add(new THREE.Mesh(box,bm));g.position.set(x,y,z);
+ const st=[];[[x,'R','L'],[y,'U','D'],[z,'F','B']].forEach(([v,p,m])=>{if(!v)return;if(v===1&&!0||v===-1){const n=NRM[v===1?p:m],mt=new THREE.MeshStandardMaterial({color:GRAY,roughness:.3}),me=new THREE.Mesh(pl,mt);me.quaternion.setFromUnitVectors(new V(0,0,1),n);me.position.copy(n).multiplyScalar(.483);g.add(me);st.push({m:me,n:n.clone(),c:''})}});
+ scene.add(g);cubies.push({g,home:new V(x,y,z),bm,st})}
+const find=(pv)=>cubies.find(c=>rnd(c.g.position).equals(pv));
+const setC=(t,l)=>{t.c=l;t.m.material.color.setHex(l?COL[l]:GRAY)};
+function paint(f,l){const[p,n]=fpos(f),cb=cubies.find(c=>c.home.equals(p));setC(cb.st.find(t=>t.n.equals(n)),l)}
+function setState(s){cubies.forEach(c=>{c.g.position.copy(c.home);c.g.quaternion.identity();c.st.forEach(t=>setC(t,''))});s.forEach((l,f)=>l&&paint(f,l));hl(null)}
+function readState(){const r=[];for(let f=0;f<54;f++){const[p,n]=fpos(f),cb=find(p),t=cb.st.find(t=>rnd(t.n.clone().applyQuaternion(cb.g.quaternion)).equals(n));r.push(t.c)}return r}
+/* ---------- movimentos ---------- */
+let anim=null,frozen=false;
+function mv(m,dur,cb){const L=m[0],s=m[1]||'',n=NRM[L],ang=-Math.PI/2*(s==="'"?-1:s==='2'?2:1),sel=cubies.filter(c=>c.g.position.dot(n)>.5);
+ anim={sel,n,ang,t0:performance.now(),dur,cb,st:sel.map(c=>({p:c.g.position.clone(),q:c.g.quaternion.clone()}))};if(dur<=0)fin()}
+function ap(e){const a=anim,q=new Q().setFromAxisAngle(a.n,a.ang*e);a.sel.forEach((c,i)=>{c.g.position.copy(a.st[i].p).applyQuaternion(q);c.g.quaternion.copy(q).multiply(a.st[i].q)})}
+function fin(){ap(1);anim.sel.forEach(c=>{c.g.position.copy(rnd(c.g.position));c.g.quaternion.normalize()});const cb=anim.cb;anim=null;cb&&cb()}
+function hl(m){cubies.forEach(c=>{c.st.forEach(t=>t.m.material.emissive.setHex(0));c.bm.emissive.setHex(0)});if(!m)return;cubies.filter(c=>c.g.position.dot(NRM[m[0]])>.5).forEach(c=>{c.st.forEach(t=>t.m.material.emissive.setHex(0x2c3a3e));c.bm.emissive.setHex(0x0b5566)})}
+const iv=m=>m[0]+(m[1]?m[1]==='2'?'2':'':"'");
+/* ---------- câmera ---------- */
+let th=.7,ph=1.2,zm=1,tgt=null,spin=true,drag=null,pts=new Map(),screen='home';
+cv.addEventListener('pointerdown',e=>{cv.setPointerCapture(e.pointerId);pts.set(e.pointerId,[e.clientX,e.clientY]);spin=false;tgt=null;cv.style.cursor='grabbing'});
+cv.addEventListener('pointermove',e=>{if(!pts.has(e.pointerId))return;const o=pts.get(e.pointerId);if(pts.size===2){const[a,b]=[...pts.values()],d0=Math.hypot(a[0]-b[0],a[1]-b[1]);pts.set(e.pointerId,[e.clientX,e.clientY]);const[c,d]=[...pts.values()];zm=Math.min(1.5,Math.max(.95,zm*d0/Math.max(1,Math.hypot(c[0]-d[0],c[1]-d[1]))));return}
+ th-=(e.clientX-o[0])*.01;ph=Math.min(Math.PI-.25,Math.max(.25,ph-(e.clientY-o[1])*.01));pts.set(e.pointerId,[e.clientX,e.clientY])});
+['pointerup','pointercancel'].forEach(t=>cv.addEventListener(t,e=>{pts.delete(e.pointerId);cv.style.cursor='grab'}));
+cv.addEventListener('wheel',e=>{e.preventDefault();zm=Math.min(1.5,Math.max(.95,zm+e.deltaY*.0008))},{passive:false});
+const FV={F:[0,1.35],B:[Math.PI,1.35],R:[Math.PI/2,1.35],L:[-Math.PI/2,1.35],U:[0,.45],D:[0,Math.PI-.45]};
+function size(){const s=$('#cvw'),w=s.clientWidth||1,h=s.clientHeight||1;ren.setSize(w,h,false);cam.aspect=w/h;cam.updateProjectionMatrix()}
+new ResizeObserver(size).observe($('#cvw'));let last=performance.now();
+(function loop(now){requestAnimationFrame(loop);const dt=now-last;last=now;
+ if(spin){th+=dt*.0006}
+ if(tgt){const d=((tgt[0]-th+Math.PI)%(2*Math.PI)+2*Math.PI)%(2*Math.PI)-Math.PI;th+=d*.12;ph+=(tgt[1]-ph)*.12}
+ if(anim){if(frozen)anim.t0+=dt;else{const t=Math.min(1,(now-anim.t0)/anim.dur);ap(t<.5?2*t*t:1-2*(1-t)*(1-t));if(t>=1)fin()}}
+ const rad=Math.max(7.6,7.6/Math.min(1,cam.aspect))*zm;cam.position.set(rad*Math.sin(ph)*Math.sin(th),rad*Math.cos(ph),rad*Math.sin(ph)*Math.cos(th));cam.lookAt(0,0,0);ren.render(scene,cam)})(last);
+/* ---------- telas ---------- */
+const P=$('#P');let sel='F',cur='U',msg='',pasteOpen=false,pasteTxt='',moves=[],k=0,playing=false,speed=1,verdict='';
+function show(s){screen=s;$('#app').className=s==='home'?'home':'work '+s}
+function editor(){const done=FACES.split('').filter((F,i)=>S.slice(i*9,i*9+9).every(x=>x)).length,fi=FACES.indexOf(sel);
+ const cnt=l=>S.filter(x=>x===l).length;
+ P.innerHTML=`<h2>CONFIGURE SEU CUBO</h2><div class="sm">${done} de 6 faces configuradas</div><div class="bar"><i style="width:${done/6*100}%"></i></div>
+ <div class="lbl">FACE</div><div class="faces">${'FBRLUD'.split('').map(F=>`<button data-f="${F}" class="${F===sel?'on':''}" aria-label="${FN[F]}" title="${FN[F]}">${FA[F]}</button>`).join('')}</div><div class="cap">Face selecionada: <b>${FN[sel]}</b></div>
+ <div class="grid">${[...Array(9)].map((_,i)=>{const l=S[fi*9+i];return`<b data-i="${i}" style="background:${l?'#'+COL[l].toString(16).padStart(6,'0'):''}">${i===4?'🔒':''}</b>`}).join('')}</div>
+ <div class="sm" style="text-align:center">Gire o cubo físico até ver a face ${FN[sel]} de frente, com a face ${FN[TOP[sel]]} no topo.</div>
+ <div class="lbl">COR</div><div class="pal">${FACES.split('').map(l=>`<button data-c="${l}" class="${l===cur?'on':''}" style="--c:#${COL[l].toString(16).padStart(6,'0')}" aria-pressed="${l===cur}" aria-label="${CN[l]}" title="${CN[l]}">${CA[l]}</button>`).join('')}</div><div class="cap">${CN[cur]} · ${cnt(cur)}/9 aplicados</div>
+ <div class="msg">${msg}</div>
+ <div class="r2"><button data-a="clear">LIMPAR CORES</button><button data-a="reset">REINICIAR</button><button class="w${pasteOpen?' on':''}" data-a="paste">COLAR EMBARALHAMENTO</button></div>${pasteOpen?`<textarea id="seq" placeholder="Ex.: R U R' U' F2 D L' B2" spellcheck="false">${pasteTxt.replace(/&/g,'&amp;').replace(/</g,'&lt;')}</textarea><div class="row"><button class="pr" data-a="apply">APLICAR</button><button data-a="cancel">FECHAR</button></div>`:''}
+ <button class="pr" data-a="solve" style="width:100%">RESOLVER CUBO</button>
+ <div class="tools"><button class="tool" data-a="solved"><svg viewBox="0 0 24 24"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z"/><path d="M12 12l8-4.5M12 12v9M12 12L4 7.5"/></svg>CARREGAR CUBO RESOLVIDO</button><button class="tool" data-a="scr"><svg viewBox="0 0 24 24"><path d="M3 7h3c4 0 5 10 9 10h4M3 17h3c1.5 0 2.6-1.5 3.6-3.2M13.5 9.7C14.4 8.3 15.6 7 17 7h2"/><path d="M17 4l3 3-3 3M17 14l3 3-3 3"/></svg>EMBARALHAR</button></div>`}
+P.addEventListener('input',e=>{if(e.target.id==='seq')pasteTxt=e.target.value});
+P.addEventListener('click',e=>{const t=e.target.closest('[data-f],[data-i],[data-c],[data-a]');if(!t)return;const d=t.dataset;
+ if(screen==='edit'){
+  if(d.f){sel=d.f;tgt=FV[sel];spin=false}
+  else if(d.i!==undefined){const i=+d.i;if(i===4){msg='O centro é fixo e define a cor da face.'}else{const f=FACES.indexOf(sel)*9+i;S[f]=cur;paint(f,cur);msg=''}}
+  else if(d.c)cur=d.c;
+  else if(d.a==='clear'){S=newState();setState(S);msg=''}
+  else if(d.a==='reset'){S=newState();setState(S);msg='';sel='F';show('home');spin=true;tgt=null}
+  else if(d.a==='solved'){S=FACES.split('').flatMap(F=>Array(9).fill(F));setState(S);msg=''}
+  else if(d.a==='scr'){S=FACES.split('').flatMap(F=>Array(9).fill(F));setState(S);const MV=[...'UDRLFB'],sf=['',"'",'2'];let seq=[],lf='';do{seq=[];lf='';const len=15+Math.random()*10|0;while(seq.length<len){const L=MV[Math.random()*6|0];if(L===lf)continue;lf=L;seq.push(L+sf[Math.random()*3|0])}setState(FACES.split('').flatMap(F=>Array(9).fill(F)));seq.forEach(m=>mv(m,0));S=readState()}while(validate(S)||S.every((l,i)=>l===FACES[i/9|0]));setState(S);msg='Embaralhado com: '+seq.join(' ');pasteTxt=seq.join(' ')}
+  else if(d.a==='paste'){pasteOpen=!pasteOpen;msg=''}
+  else if(d.a==='cancel'){pasteOpen=false;msg=''}
+  else if(d.a==='apply'){importSeq()}
+  else if(d.a==='solve')return solve();
+  editor();return}
+ if(screen==='tut'){const a=d.a;
+  if(a==='next'&&!anim){playing=false;next()}
+  else if(a==='back'&&!anim){playing=false;hl(null);verdict='';if(k>0)mv(iv(moves[k-1]),700/speed,()=>{k--;tut();hlN()})}
+  else if(a==='rep'&&!anim&&k>0){playing=false;verdict='';mv(iv(moves[k-1]),0,()=>{k--;next()})}
+  else if(a==='auto'){if(playing){playing=false;frozen=true}else if(k<moves.length||anim){playing=true;frozen=false;if(!anim)next()}tut()}
+  else if(a==='exit'){playing=false;frozen=false;anim=null;setState(S);msg='';show('edit');editor()}}});
+function parseSeq(t){const tk=t.replace(/[’‘´`]/g,"'").trim().split(/\s+/).filter(Boolean);if(!tk.length)return{e:'Cole uma sequência de movimentos antes de aplicar.'};const out=[];for(let i=0;i<tk.length;i++){const m=/^([URFDLB])(2'?|')?$/.exec(tk[i]);if(!m)return{e:'Movimento inválido: "'+tk[i].replace(/</g,'&lt;')+'" (posição '+(i+1)+'). Use apenas U, D, L, R, F, B, com \' ou 2 (ex.: R, U\', F2). Letras como P e O não existem nessa notação. O cubo não foi alterado.'};out.push(m[1]+(m[2]==="'"?"'":m[2]?'2':''))}return{m:out}}
+function importSeq(){const r=parseSeq(pasteTxt);if(r.e){msg=r.e;return}
+ setState(FACES.split('').flatMap(F=>Array(9).fill(F)));r.m.forEach(m=>mv(m,0));S=readState();setState(S);pasteTxt=r.m.join(' ');
+ msg=S.every((l,i)=>l===FACES[i/9|0])?'A sequência resulta no cubo resolvido.':'<span class="ok">Sequência aplicada ('+r.m.length+' movimentos).</span>'}
+function solve(){const err=validate(S);if(err){msg=err;return editor()}msg='';$('#B').style.display='grid';
+ setTimeout(()=>{try{if(!window.Cube)throw Error('A biblioteca do solver (cubejs) não carregou. Verifique a conexão e recarregue.');
+  if(!Cube.__i){Cube.initSolver();Cube.__i=1}const str=S.join(''),c=Cube.fromString(str),sol=c.solve();if(sol==null)throw Error('O solver não encontrou solução.');
+  const t=Cube.fromString(str);t.move(sol);if(!t.isSolved())throw Error('A verificação interna da solução falhou.');
+  moves=sol.trim().split(/\s+/).filter(Boolean);if(!moves.length){msg='Seu cubo já está resolvido!';$('#B').style.display='none';return editor()}
+  k=0;playing=false;frozen=false;verdict='';setState(S);tgt=[.7,1.1];spin=false;show('tut');tut();hlN()}catch(e){msg=e.message;editor()}$('#B').style.display='none'},60)}
+function next(){if(anim||k>=moves.length)return;hl(null);mv(moves[k],700/speed,()=>{k++;if(k===moves.length)end();tut();if(k<moves.length&&playing)next();else{playing=false;hlN();tut()}})}
+const hlN=()=>hl(k<moves.length&&!playing?moves[k]:null);
+function end(){const r=readState(),ok=FACES.split('').every((F,i)=>r.slice(i*9,i*9+9).every(x=>x===F));verdict=ok?'<span class="ok">✔ Cubo resolvido! Estado final verificado: as 6 faces estão uniformes.</span>':'Erro: o estado final não ficou resolvido.'}
+function expl(m){const s=m[1]||'';return`Gire a face ${FL[m[0]]} (${m[0]}) ${s==='2'?'meia-volta (180°)':s==="'"?'um quarto de volta no sentido anti-horário':'um quarto de volta no sentido horário'}, olhando de frente para ela. A camada que gira está destacada.`}
+function tut(){const n=moves.length,d=k>=n;P.innerHTML=`<h2>SEU CAMINHO PARA RESOLVER</h2><div class="big">${d?'✔':moves[k]}</div><p style="text-align:center;margin:4px 0 10px">${d?verdict:expl(moves[k])}</p>
+ <div class="sm">Movimento ${Math.min(k+1,n)} de ${n}</div><div class="bar"><i style="width:${k/n*100}%"></i></div>
+ <div class="row"><button data-a="back">‹ VOLTAR</button><button class="pr" data-a="next">PRÓXIMO MOVIMENTO ›</button></div>
+ <div class="row"><button data-a="rep">↺ REPETIR</button><button data-a="auto">${playing?'❚❚ PAUSAR':'▶ AUTOMÁTICO'}</button></div>
+ <label class="sm">Velocidade<input type="range" id="spd" min=".5" max="3" step=".25" value="${speed}"></label>
+ <details><summary>Como ler a notação</summary><p>R direita · L esquerda · U cima · D baixo · F frente · B trás.<br>Apóstrofo (R') = sentido inverso. Número 2 (U2) = meia-volta.<br>Sentido horário = visto de frente para a face. Segure o cubo com a mesma orientação do app: <b>Branco em cima, Verde na frente</b>.</p></details>
+ <button data-a="exit" style="width:100%">VOLTAR AO CUBO COMPLETO</button>`;
+ const sl=$('#spd');sl.oninput=()=>speed=+sl.value}
+$('#bk').onclick=()=>{setState(FACES.split('').flatMap(F=>Array(9).fill(F)));spin=true;tgt=null;msg='';show('home')};
+$('#go').onclick=()=>{spin=false;tgt=FV[sel];setState(S);show('edit');editor()};
+$('#how').onclick=()=>$('#M').style.display='grid';$('#mx').onclick=()=>$('#M').style.display='none';
+setState(FACES.split('').flatMap(F=>Array(9).fill(F)));size();
+</script></body></html>
